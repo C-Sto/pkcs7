@@ -42,6 +42,9 @@ const (
 	// EncryptionAlgorithmDESCBC is the DES CBC encryption algorithm
 	EncryptionAlgorithmDESCBC = iota
 
+	// EncryptionAlgorithmDESEDE3CBC is the DES-EDE3 CBC encryption algorithm
+	EncryptionAlgorithmDESEDE3CBC
+
 	// EncryptionAlgorithmAES128CBC is the AES 128 bits with CBC encryption algorithm
 	// Avoid this algorithm unless required for interoperability; use AES GCM instead.
 	EncryptionAlgorithmAES128CBC
@@ -191,6 +194,50 @@ func encryptDESCBC(content []byte, key []byte) ([]byte, *encryptedContentInfo, e
 	return key, &eci, nil
 }
 
+func encryptDESEDE3CBC(content []byte, key []byte) ([]byte, *encryptedContentInfo, error) {
+	if key == nil {
+		// Create DES key
+		key = make([]byte, 16)
+
+		_, err := rand.Read(key)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	// Create CBC IV
+	iv := make([]byte, des.BlockSize)
+	_, err := rand.Read(iv)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Encrypt padded content
+	block, err := des.NewTripleDESCipher(key)
+	if err != nil {
+		return nil, nil, err
+	}
+	mode := cipher.NewCBCEncrypter(block, iv)
+	plaintext, err := pad(content, mode.BlockSize())
+	if err != nil {
+		return nil, nil, err
+	}
+	cyphertext := make([]byte, len(plaintext))
+	mode.CryptBlocks(cyphertext, plaintext)
+
+	// Prepare ASN.1 Encrypted Content Info
+	eci := encryptedContentInfo{
+		ContentType: OIDData,
+		ContentEncryptionAlgorithm: pkix.AlgorithmIdentifier{
+			Algorithm:  OIDEncryptionAlgorithmDESEDE3CBC,
+			Parameters: asn1.RawValue{Tag: 4, Bytes: iv},
+		},
+		EncryptedContent: marshalEncryptedContent(cyphertext),
+	}
+
+	return key, &eci, nil
+}
+
 func encryptAESCBC(content []byte, key []byte) ([]byte, *encryptedContentInfo, error) {
 	var keyLen int
 	var algID asn1.ObjectIdentifier
@@ -268,6 +315,8 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 	switch ContentEncryptionAlgorithm {
 	case EncryptionAlgorithmDESCBC:
 		key, eci, err = encryptDESCBC(content, nil)
+	case EncryptionAlgorithmDESEDE3CBC:
+		key, eci, err = encryptDESEDE3CBC(content, nil)
 	case EncryptionAlgorithmAES128CBC:
 		fallthrough
 	case EncryptionAlgorithmAES256CBC:
