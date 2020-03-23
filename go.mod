@@ -1,3 +1,3 @@
-module go.mozilla.org/pkcs7
+module github.com/gataka/pkcs7
 
 go 1.11
