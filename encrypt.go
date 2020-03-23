@@ -197,7 +197,7 @@ func encryptDESCBC(content []byte, key []byte) ([]byte, *encryptedContentInfo, e
 func encryptDESEDE3CBC(content []byte, key []byte) ([]byte, *encryptedContentInfo, error) {
 	if key == nil {
 		// Create DES key
-		key = make([]byte, 16)
+		key = make([]byte, 24)
 
 		_, err := rand.Read(key)
 		if err != nil {
