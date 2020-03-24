@@ -28,7 +28,7 @@ type encryptedData struct {
 type recipientInfo struct {
 	Version                int
 	IssuerAndSerialNumber  issuerAndSerial
-	SubjectKeyIdentifier   [][]byte
+	SubjectKeyIdentifier   []byte
 	KeyEncryptionAlgorithm pkix.AlgorithmIdentifier
 	EncryptedKey           []byte
 }
@@ -358,7 +358,7 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 		if len(recipient.SubjectKeyId) != 0 {
 			infoSKID := recipientInfo{
 				Version:              0,
-				SubjectKeyIdentifier: [][]byte{recipient.SubjectKeyId},
+				SubjectKeyIdentifier: recipient.SubjectKeyId,
 				KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
 					Algorithm: OIDEncryptionAlgorithmRSA,
 				},
