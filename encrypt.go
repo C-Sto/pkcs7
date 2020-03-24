@@ -28,6 +28,7 @@ type encryptedData struct {
 type recipientInfo struct {
 	Version                int
 	IssuerAndSerialNumber  issuerAndSerial
+	SubjectKeyIdentifier   [][]byte
 	KeyEncryptionAlgorithm pkix.AlgorithmIdentifier
 	EncryptedKey           []byte
 }
@@ -335,8 +336,8 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 	}
 
 	// Prepare each recipient's encrypted cipher key
-	recipientInfos := make([]recipientInfo, len(recipients))
-	for i, recipient := range recipients {
+	recipientInfos := make([]recipientInfo, 0)
+	for _, recipient := range recipients {
 		encrypted, err := encryptKey(key, recipient)
 		if err != nil {
 			return nil, err
@@ -353,7 +354,18 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 			},
 			EncryptedKey: encrypted,
 		}
-		recipientInfos[i] = info
+		recipientInfos = append(recipientInfos, info)
+		if len(recipient.SubjectKeyId) != 0 {
+			infoSKID := recipientInfo{
+				Version:              0,
+				SubjectKeyIdentifier: [][]byte{recipient.SubjectKeyId},
+				KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
+					Algorithm: OIDEncryptionAlgorithmRSA,
+				},
+				EncryptedKey: encrypted,
+			}
+			recipientInfos = append(recipientInfos, infoSKID)
+		}
 	}
 
 	// Prepare envelope content
