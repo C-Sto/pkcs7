@@ -27,8 +27,8 @@ type encryptedData struct {
 
 type recipientInfo struct {
 	Version                int
-	IssuerAndSerialNumber  issuerAndSerial `asn1:"tag:2,optional"`
-	SubjectKeyIdentifier   []byte          `asn1:"tag:4,optional"`
+	IssuerAndSerialNumber  issuerAndSerial `asn1:"optional"`
+	SubjectKeyIdentifier   []byte          `asn1:"optional"`
 	KeyEncryptionAlgorithm pkix.AlgorithmIdentifier
 	EncryptedKey           []byte
 }
