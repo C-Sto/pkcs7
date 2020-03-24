@@ -26,9 +26,9 @@ type encryptedData struct {
 }
 
 type recipientInfo struct {
-	Version               int
-	IssuerAndSerialNumber issuerAndSerial `asn1:"optional"`
-	//SubjectKeyIdentifier   []byte          `asn1:"optional"`
+	Version                int
+	IssuerAndSerialNumber  issuerAndSerial      `asn1:"optional"`
+	SubjectKeyIdentifier   subjectKeyIdentifier `asn1:"optional"`
 	KeyEncryptionAlgorithm pkix.AlgorithmIdentifier
 	EncryptedKey           []byte
 }
@@ -38,7 +38,9 @@ type encryptedContentInfo struct {
 	ContentEncryptionAlgorithm pkix.AlgorithmIdentifier
 	EncryptedContent           asn1.RawValue `asn1:"tag:0,optional,explicit"`
 }
-
+type subjectKeyIdentifier struct {
+	skid []byte
+}
 const (
 	// EncryptionAlgorithmDESCBC is the DES CBC encryption algorithm
 	EncryptionAlgorithmDESCBC = iota
@@ -356,17 +358,20 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 			EncryptedKey: encrypted,
 		}
 		recipientInfos = append(recipientInfos, info)
-		//if len(recipient.SubjectKeyId) != 0 {
-		//	infoSKID := recipientInfo{
-		//		Version:              2,
-		//		KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
-		//			Algorithm: OIDEncryptionAlgorithmRSA,
-		//			Parameters: asn1.NullRawValue,
-		//		},
-		//		EncryptedKey: encrypted,
-		//	}
-		//	recipientInfos = append(recipientInfos, infoSKID)
-		//}
+		if len(recipient.SubjectKeyId) != 0 {
+			infoSKID := recipientInfo{
+				Version: 2,
+				KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
+					Algorithm:  OIDEncryptionAlgorithmRSA,
+					Parameters: asn1.NullRawValue,
+				},
+				SubjectKeyIdentifier: subjectKeyIdentifier{
+					skid: recipient.SubjectKeyId,
+				},
+				EncryptedKey: encrypted,
+			}
+			recipientInfos = append(recipientInfos, infoSKID)
+		}
 	}
 
 	// Prepare envelope content
