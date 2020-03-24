@@ -375,6 +375,13 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 
 	return asn1.Marshal(wrapper)
 }
+func EncryptToDER(content []byte, recipients []*x509.Certificate) ([]byte, error) {
+	asn, err := Encrypt(content, recipients)
+	if err != nil {
+		return nil, err
+	}
+	return ber2der(asn)
+}
 
 // EncryptUsingPSK creates and returns an encrypted data PKCS7 structure,
 // encrypted using caller provided pre-shared secret.
