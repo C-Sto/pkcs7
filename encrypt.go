@@ -26,9 +26,9 @@ type encryptedData struct {
 }
 
 type recipientInfo struct {
-	Version                int
-	IssuerAndSerialNumber  issuerAndSerial `asn1:"optional"`
-	SubjectKeyIdentifier   []byte          `asn1:"optional"`
+	Version               int
+	IssuerAndSerialNumber issuerAndSerial `asn1:"optional"`
+	//SubjectKeyIdentifier   []byte          `asn1:"optional"`
 	KeyEncryptionAlgorithm pkix.AlgorithmIdentifier
 	EncryptedKey           []byte
 }
@@ -350,22 +350,23 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 			Version:               0,
 			IssuerAndSerialNumber: ias,
 			KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
-				Algorithm: OIDEncryptionAlgorithmRSA,
+				Algorithm:  OIDEncryptionAlgorithmRSA,
+				Parameters: asn1.NullRawValue,
 			},
 			EncryptedKey: encrypted,
 		}
 		recipientInfos = append(recipientInfos, info)
-		if len(recipient.SubjectKeyId) != 0 {
-			infoSKID := recipientInfo{
-				Version:              2,
-				SubjectKeyIdentifier: recipient.SubjectKeyId,
-				KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
-					Algorithm: OIDEncryptionAlgorithmRSA,
-				},
-				EncryptedKey: encrypted,
-			}
-			recipientInfos = append(recipientInfos, infoSKID)
-		}
+		//if len(recipient.SubjectKeyId) != 0 {
+		//	infoSKID := recipientInfo{
+		//		Version:              2,
+		//		KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
+		//			Algorithm: OIDEncryptionAlgorithmRSA,
+		//			Parameters: asn1.NullRawValue,
+		//		},
+		//		EncryptedKey: encrypted,
+		//	}
+		//	recipientInfos = append(recipientInfos, infoSKID)
+		//}
 	}
 
 	// Prepare envelope content
