@@ -356,24 +356,24 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 			EncryptedKey: encrypted,
 		}
 		recipientInfos = append(recipientInfos, info)
-		if len(recipient.SubjectKeyId) != 0 {
-
-			infoSKID := recipientInfo{
-				Version: 2,
-				KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
-					Algorithm:  OIDEncryptionAlgorithmRSA,
-					Parameters: asn1.NullRawValue,
-				},
-				//SubjectKeyIdentifier: asn1.RawValue{
-				//	Class:      asn1.ClassContextSpecific,
-				//	Tag:        asn1.TagOctetString,
-				//	IsCompound: false,
-				//	Bytes:      recipient.SubjectKeyId,
-				//},
-				EncryptedKey: encrypted,
-			}
-			recipientInfos = append(recipientInfos, infoSKID)
-		}
+		//if len(recipient.SubjectKeyId) != 0 {
+		//
+		//	infoSKID := recipientInfo{
+		//		Version: 2,
+		//		KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
+		//			Algorithm:  OIDEncryptionAlgorithmRSA,
+		//			Parameters: asn1.NullRawValue,
+		//		},
+		//		SubjectKeyIdentifier: asn1.RawValue{
+		//			Class:      asn1.ClassContextSpecific,
+		//			Tag:        asn1.TagOctetString,
+		//			IsCompound: false,
+		//			Bytes:      recipient.SubjectKeyId,
+		//		},
+		//		EncryptedKey: encrypted,
+		//	}
+		//	recipientInfos = append(recipientInfos, infoSKID)
+		//}
 	}
 
 	// Prepare envelope content
