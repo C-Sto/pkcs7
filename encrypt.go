@@ -357,18 +357,19 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 		}
 		recipientInfos = append(recipientInfos, info)
 		if len(recipient.SubjectKeyId) != 0 {
+
 			infoSKID := recipientInfo{
 				Version: 2,
 				KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
 					Algorithm:  OIDEncryptionAlgorithmRSA,
 					Parameters: asn1.NullRawValue,
 				},
-				SubjectKeyIdentifier: asn1.RawValue{
-					Class:      asn1.ClassContextSpecific,
-					Tag:        0,
-					IsCompound: false,
-					Bytes:      recipient.SubjectKeyId,
-				},
+				//SubjectKeyIdentifier: asn1.RawValue{
+				//	Class:      asn1.ClassContextSpecific,
+				//	Tag:        asn1.TagOctetString,
+				//	IsCompound: false,
+				//	Bytes:      recipient.SubjectKeyId,
+				//},
 				EncryptedKey: encrypted,
 			}
 			recipientInfos = append(recipientInfos, infoSKID)
